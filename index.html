@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEGO House Denmark — Visitor Companion</title>
+<style>
+  :root{
+    --blue:#0066b3; --green:#00963d; --yellow:#ffd400; --red:#d9101a;
+    --ink:#1a1a1a; --paper:#f4f6f8; --card:#ffffff; --line:#e3e7eb;
+    --gold:#ffc107; --star-off:#dfe3e8;
+    --shadow:0 2px 10px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
+  header.top{background:#fff;border-bottom:3px solid var(--yellow);padding:12px 20px;display:flex;
+    align-items:center;gap:14px;position:sticky;top:0;z-index:20;box-shadow:var(--shadow)}
+  .studs{display:flex;gap:5px}
+  .stud{width:15px;height:15px;border-radius:50%;box-shadow:inset 0 -2px 3px rgba(0,0,0,.25)}
+  .stud:nth-child(1){background:var(--red)} .stud:nth-child(2){background:var(--blue)}
+  .stud:nth-child(3){background:var(--yellow)} .stud:nth-child(4){background:var(--green)}
+  header.top h1{font-size:17px;margin:0;font-weight:800;letter-spacing:-.3px}
+  header.top h1 span{color:#888;font-weight:600;font-size:12.5px;display:block;letter-spacing:0}
+  .authchip{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:22px;padding:7px 13px;
+    font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap}
+  .authchip:hover{box-shadow:var(--shadow)}
+  .authchip .av{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;display:flex;
+    align-items:center;justify-content:center;font-size:12px;font-weight:800}
+  nav.tabs{background:#fff;border-bottom:1px solid var(--line);padding:0 20px;display:flex;gap:4px;
+    position:sticky;top:60px;z-index:19;overflow-x:auto}
+  nav.tabs button{border:0;background:none;padding:13px 15px;font-size:14px;font-weight:700;color:#8a939d;
+    cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px}
+  nav.tabs button:hover{color:var(--ink)} nav.tabs button.on{color:var(--ink);border-bottom-color:var(--red)}
+  nav.tabs .badge{background:var(--paper);border-radius:20px;padding:1px 8px;font-size:11px;color:#5a6470}
+  .view{display:none;max-width:1180px;margin:0 auto;padding:22px} .view.on{display:block}
+  .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:22px}
+  @media(max-width:900px){.grid2{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+  .panel-h{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:15px;
+    display:flex;justify-content:space-between;align-items:center} .panel-h small{color:#888;font-weight:500}
+  .map-stage{padding:18px} svg{width:100%;height:auto;display:block}
+  .zone{cursor:pointer;transition:opacity .15s} .zone:hover{opacity:.88} .zone.sel{stroke:#1a1a1a;stroke-width:4}
+  .znum{font-weight:900;fill:#fff;font-size:22px;pointer-events:none}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;padding:0 18px 18px}
+  .legend button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 11px;cursor:pointer;
+    font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px;transition:.12s}
+  .legend button:hover{box-shadow:var(--shadow)} .legend button.on{border-color:#1a1a1a;box-shadow:var(--shadow)}
+  .swatch{width:13px;height:13px;border-radius:3px}
+  .empty{padding:40px 22px;text-align:center;color:#9aa3ad} .empty b{display:block;font-size:15px;color:#5a6470;margin-bottom:4px}
+  .zhero{padding:18px;color:#fff} .zhero h2{margin:0 0 2px;font-size:22px;font-weight:800}
+  .zhero .skill{display:inline-block;background:rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-size:11.5px;font-weight:700;margin-bottom:7px}
+  .zhero p{margin:0;opacity:.94;font-size:13.5px} .zbody{padding:18px}
+  .stat-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .stat{flex:1;min-width:120px;background:var(--paper);border-radius:12px;padding:11px 13px}
+  .stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#8a939d;font-weight:700}
+  .stat .v{font-size:19px;font-weight:800;margin-top:3px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .crowd-pill{font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;color:#fff}
+  .sec-title{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#8a939d;font-weight:700;margin:18px 0 9px}
+  .dolist{list-style:none;margin:0;padding:0} .dolist li{position:relative;padding:6px 0 6px 22px;font-size:13.5px;line-height:1.45}
+  .dolist li::before{content:"🧱";position:absolute;left:0;top:5px;font-size:12px}
+  .plan-btn{width:100%;border:0;border-radius:11px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;color:#fff;transition:.12s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .plan-btn:hover{filter:brightness(1.06)} .plan-btn.added{background:#2b8a3e!important}
+
+  /* ===== STAR RATING — single glyph, color-only (no reflow, no overflow) ===== */
+  .stars{display:inline-flex;gap:3px;line-height:1;white-space:nowrap;vertical-align:middle;max-width:100%}
+  .stars .star{color:var(--star-off)} .stars .star.on{color:var(--gold)}
+  .stat .stars .star{font-size:14px} .review .stars .star{font-size:15px}
+  .stars.rate{gap:8px;padding:4px 0;user-select:none}
+  .stars.rate .star{font-size:30px;cursor:pointer;transition:color .1s ease}
+  .stars.rate .star:hover{color:#ffca2c}
+  .rate-hint{font-size:12px;color:#9aa3ad;margin-left:8px;vertical-align:middle}
+
+  textarea,input[type=text],input[type=time],select{width:100%;border:1px solid var(--line);border-radius:10px;
+    padding:10px;font-family:inherit;font-size:13.5px;resize:vertical;background:#fff}
+  textarea:focus,input:focus,select:focus{outline:2px solid var(--blue);border-color:var(--blue)}
+  .submit{margin-top:9px;border:0;background:var(--ink);color:#fff;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:13.5px} .submit:hover{filter:brightness(1.2)}
+  .posting-as{font-size:12.5px;color:#5a6470;background:var(--paper);border-radius:9px;padding:8px 11px;margin-bottom:8px}
+  .posting-as b{color:var(--ink)} .posting-as a{color:var(--blue);cursor:pointer;font-weight:700;text-decoration:none}
+  .review{border-top:1px solid var(--line);padding:13px 0} .review:first-of-type{border-top:0}
+  .review .rhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:8px}
+  .review .who{font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:7px}
+  .review .who .av{width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+  .review .when{font-size:11.5px;color:#9aa3ad} .review .txt{font-size:13.5px;line-height:1.5;color:#333;margin-top:4px}
+  .review .zpill{font-size:11px;font-weight:700;color:#fff;padding:2px 9px;border-radius:20px}
+  /* ===== TRIP VIDEOS ===== */
+  .vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+  @media(max-width:640px){.vid-grid{grid-template-columns:1fr}}
+  .vcard{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  .vcard .frame{position:relative;width:100%;aspect-ratio:16/9;background:#000}
+  .vcard .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vcard .link-thumb{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    background:linear-gradient(135deg,#1a1a1a,#333);color:#fff;text-decoration:none;font-weight:700;font-size:13px;text-align:center;padding:14px}
+  .vcard .link-thumb .play{width:46px;height:46px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .vcard .link-thumb small{font-weight:500;opacity:.75;font-size:11.5px;word-break:break-all}
+  .vcard .vmeta{padding:11px 13px}
+  .vcard .vtitle{font-weight:700;font-size:14px;line-height:1.35;margin:0 0 6px}
+  .vcard .vfoot{display:flex;align-items:center;gap:7px;font-size:12px;color:#5a6470}
+  .vcard .vfoot .av{width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none}
+  .vcard .vfoot .zpill{font-size:10.5px;font-weight:700;color:#fff;padding:2px 8px;border-radius:20px;margin-left:auto}
+  .vid-preview{margin-top:10px}
+  .vid-preview .frame{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+  .vid-preview .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vid-preview .warn{font-size:12.5px;color:#b26a00;background:#fff7e6;border:1px solid #f4d774;border-radius:9px;padding:8px 11px}
+  .vid-preview .okline{font-size:12px;color:#2b8a3e;font-weight:600;padding:4px 2px}
+  #planList,#stopList{list-style:none;margin:0;padding:0}
+  #planList li,#stopList li{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:11px;background:var(--paper);margin-bottom:8px;font-weight:600;font-size:14px}
+  #planList li .dot{width:12px;height:12px;border-radius:3px;flex:none}
+  .rm{margin-left:auto;border:0;background:transparent;color:#b0b8c0;cursor:pointer;font-size:18px} .rm:hover{color:var(--red)}
+  .plan-empty{color:#9aa3ad;font-size:13px;padding:6px 2px}
+  .plan-foot{margin-top:8px;font-size:12.5px;color:#5a6470;background:var(--paper);padding:10px 12px;border-radius:10px}
+  .stop-meta{font-size:11.5px;color:#8a939d;font-weight:500}
+  .tag{display:inline-block;background:var(--paper);border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:600;color:#5a6470;margin:0 5px 5px 0}
+  .field-row{display:flex;gap:8px;flex-wrap:wrap} .field-row>*{flex:1;min-width:120px}
+  .quick-add{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+  .quick-add button{border:1px dashed var(--line);background:#fff;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:12.5px;font-weight:600;color:#5a6470}
+  .quick-add button:hover{border-color:var(--blue);color:var(--blue)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 12px;cursor:pointer;font-size:12.5px;font-weight:600;color:#5a6470}
+  .chip.on{color:#fff;border-color:transparent}
+  .ess-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .ecard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px;box-shadow:var(--shadow)}
+  .ecard .ico{font-size:22px} .ecard h3{margin:6px 0 3px;font-size:14.5px} .ecard .big{font-size:19px;font-weight:800;margin:2px 0}
+  .ecard p{margin:3px 0 0;font-size:12.8px;color:#5a6470;line-height:1.45}
+  .callout{background:linear-gradient(135deg,#fff7d6,#ffe9a8);border:1px solid #f4d774;border-radius:14px;padding:16px 18px;margin-bottom:16px;display:flex;gap:14px;align-items:flex-start}
+  .callout .big-ico{font-size:30px} .callout h3{margin:0 0 4px;font-size:15px} .callout p{margin:0;font-size:13px;color:#6b5a1e;line-height:1.5}
+  .tips-list{list-style:none;margin:0;padding:0}
+  .tips-list li{padding:9px 0;border-top:1px dashed var(--line);font-size:13.5px;line-height:1.5;padding-left:26px;position:relative}
+  .tips-list li:first-child{border-top:0} .tips-list li::before{content:"✅";position:absolute;left:0;top:9px;font-size:12px}
+  .chat{display:flex;flex-direction:column;height:62vh;min-height:380px}
+  .chat-log{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+  .msg{max-width:82%;padding:11px 14px;border-radius:15px;font-size:13.7px;line-height:1.5;white-space:pre-wrap}
+  .msg.bot{background:var(--paper);align-self:flex-start;border-bottom-left-radius:4px}
+  .msg.me{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:4px} .msg.bot b{color:var(--red)}
+  .suggested{display:flex;flex-wrap:wrap;gap:7px;padding:0 18px 12px}
+  .suggested button{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 12px;cursor:pointer;font-size:12.5px;font-weight:600;color:#0066b3} .suggested button:hover{background:#eef5fb}
+  .chat-in{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)} .chat-in input{flex:1}
+  .chat-in button{border:0;background:var(--red);color:#fff;border-radius:10px;padding:0 18px;font-weight:700;cursor:pointer}
+  .ai-note{font-size:11.5px;color:#9aa3ad;padding:0 18px 10px}
+  footer{max-width:1180px;margin:0 auto;padding:8px 22px 30px;color:#aab2bb;font-size:12px;text-align:center} footer a{color:#aab2bb}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="studs"><div class="stud"></div><div class="stud"></div><div class="stud"></div><div class="stud"></div></div>
+  <h1>LEGO House Denmark<span>Visitor Companion — plan, review & ask the LEGO House AI</span></h1>
+  <div class="authchip" id="authChip" onclick="toggleAuth()"></div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-tab="essentials" class="on">✅ Essentials</button>
+  <button data-tab="explore">🗺️ Explore</button>
+  <button data-tab="plan">📋 My Plan <span class="badge" id="tabPlanCount">0</span></button>
+  <button data-tab="reviews">⭐ Reviews <span class="badge" id="tabRevCount">0</span></button>
+  <button data-tab="videos">🎬 Trip Videos <span class="badge" id="tabVidCount">0</span></button>
+  <button data-tab="ai">🤖 LEGO House AI</button>
+</nav>
+
+<section class="view on" id="view-essentials">
+  <div class="callout"><div class="big-ico">📿</div>
+    <div><h3>Don't miss: your LEGO wristband</h3>
+      <p>At check-in your ticket becomes an <b>NFC wristband</b>. Tap it at build stations to <b>save your creations as digital photos</b> — download them later via the wristband's QR code and memory PIN (kept 29 days). It also gives <b>unlimited same-day re-entry</b>.</p></div></div>
+  <div class="ess-grid" id="essGrid"></div>
+  <div class="panel" style="margin-top:16px"><div class="panel-h">First-timer tips</div>
+    <div style="padding:14px 18px"><ul class="tips-list" id="tipsList"></ul></div></div>
+</section>
+
+<section class="view" id="view-explore">
+  <div class="grid2">
+    <div class="panel">
+      <div class="panel-h">The four skill zones <small>tap a color</small></div>
+      <div class="map-stage">
+        <svg viewBox="0 0 520 440" id="map" aria-label="LEGO House zone map">
+          <path class="zone" data-zone="red" fill="var(--red)" d="M70 150 h120 v70 h40 v110 h-90 v40 h-70 z"/>
+          <path class="zone" data-zone="yellow" fill="var(--yellow)" d="M190 80 h95 v60 h-40 v50 h-55 v-40 h-30 v-70 z"/>
+          <path class="zone" data-zone="green" fill="var(--green)" d="M300 95 h140 v150 h-70 v55 h-70 v-110 h-30 v-95 z"/>
+          <path class="zone" data-zone="blue" fill="var(--blue)" d="M250 260 h150 v110 h-60 v40 h-120 v-90 h30 z"/>
+          <circle cx="250" cy="220" r="22" fill="#fff" stroke="#dfe3e8" stroke-width="2"/>
+          <text x="250" y="217" text-anchor="middle" font-size="9" font-weight="700" fill="#9aa3ad">TREE OF</text>
+          <text x="250" y="228" text-anchor="middle" font-size="9" font-weight="700" fill="#9aa3ad">CREATIVITY</text>
+          <text class="znum" x="120" y="250" text-anchor="middle">R</text>
+          <text class="znum" x="225" y="125" text-anchor="middle">Y</text>
+          <text class="znum" x="380" y="170" text-anchor="middle">G</text>
+          <text class="znum" x="320" y="320" text-anchor="middle">B</text>
+        </svg>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div style="padding:0 18px 18px"><div class="sec-title" style="margin-top:0">Also inside — free to explore</div><div id="specials"></div></div>
+    </div>
+    <div class="panel" id="detail">
+      <div class="empty"><b>Pick a zone to begin</b>Each color is a type of play. Tap one to see what you can build, rate it, and add it to your plan.</div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="view-plan">
+  <div class="grid2">
+    <div class="panel"><div class="panel-h">My Visit Plan <small id="planCount">0 stops</small></div>
+      <div style="padding:16px 18px">
+        <div class="sec-title" style="margin-top:0">Zones I'm visiting</div><ul id="planList"></ul>
+        <div class="sec-title">My own stops</div><ul id="stopList"></ul>
+        <div class="plan-foot" id="planFoot"></div></div></div>
+    <div class="panel"><div class="panel-h">Add to my trip</div>
+      <div style="padding:16px 18px">
+        <p style="margin:0 0 8px;font-size:13px;color:#5a6470">Add anything else — food, the shop, the rooftop — with a time and note.</p>
+        <div class="quick-add" id="quickAdd"></div>
+        <input type="text" id="stopName" placeholder="Where are you going?" maxlength="50" style="margin-top:10px">
+        <div class="field-row" style="margin-top:8px">
+          <input type="time" id="stopTime">
+          <select id="stopWhen"><option value="">Any time</option><option>Morning</option><option>Midday</option><option>Afternoon</option><option>Before leaving</option></select>
+        </div>
+        <textarea id="stopNote" rows="2" placeholder="Notes — what are you doing there?" maxlength="160" style="margin-top:8px"></textarea>
+        <button class="submit" style="width:100%;margin-top:10px" onclick="addStop()">+ Add stop to plan</button></div></div>
+  </div>
+</section>
+
+<section class="view" id="view-reviews">
+  <div class="panel"><div class="panel-h">Guest visits & reviews <small id="revCount">0 reviews</small></div>
+    <div style="padding:16px 18px"><div class="chips" id="revChips"></div><div id="allReviews"></div></div></div>
+</section>
+
+<section class="view" id="view-videos">
+  <div class="grid2">
+    <div class="panel"><div class="panel-h">Guest trip videos <small id="vidCount">0 videos</small></div>
+      <div style="padding:16px 18px"><div class="chips" id="vidChips"></div><div class="vid-grid" id="vidGrid"></div></div></div>
+    <div class="panel" id="vidFormPanel"><div class="panel-h">🎬 Post a video of your trip</div>
+      <div style="padding:16px 18px">
+        <p style="margin:0 0 8px;font-size:13px;color:#5a6470">Share a YouTube, YouTube Shorts or Vimeo link — it plays right here. Tag it to a zone or your whole trip.</p>
+        <div id="vidPoster"></div>
+        <input type="text" id="vidTitle" placeholder="Give your video a title" maxlength="80" style="margin-top:8px">
+        <input type="text" id="vidUrl" placeholder="Paste a video link (YouTube / Vimeo)…" style="margin-top:8px">
+        <select id="vidZone" style="margin-top:8px">
+          <option value="trip">🏠 My whole trip</option>
+          <option value="red">🔴 Red Zone</option>
+          <option value="blue">🔵 Blue Zone</option>
+          <option value="green">🟢 Green Zone</option>
+          <option value="yellow">🟡 Yellow Zone</option>
+        </select>
+        <div id="vidPreview" class="vid-preview"></div>
+        <button class="submit" style="width:100%;margin-top:10px" onclick="submitVideo()">+ Post my video</button>
+        <p style="margin:9px 0 0;font-size:11.5px;color:#9aa3ad">Tip: keep it kind and don't film other guests' faces without asking.</p>
+      </div></div>
+  </div>
+</section>
+
+<section class="view" id="view-ai">
+  <div class="panel"><div class="panel-h">🤖 LEGO House AI <small>your visit assistant</small></div>
+    <div class="chat"><div class="chat-log" id="chatLog"></div>
+      <div class="suggested" id="suggested"></div>
+      <div class="ai-note">Answers come from real LEGO House visitor info and live guest reviews — works offline.</div>
+      <div class="chat-in"><input type="text" id="chatInput" placeholder="Ask about hours, parking, timing, zones…" onkeydown="if(event.key==='Enter')sendChat()"><button onclick="sendChat()">Send</button></div>
+    </div></div>
+</section>
+
+<footer>Student prototype for LEGO House Denmark · data stored locally, architected for Supabase multi-user · facts from official & visitor sources.</footer>
+
+<script>
+/* ==================================================================================
+   DATA LAYER — adapter pattern so we can swap localStorage → Supabase with one line.
+   Reviews are modelled as a FLAT TABLE (one row per review) exactly like a SQL table,
+   so the shape already matches Postgres. See SUPABASE_SETUP.md for the drop-in adapter.
+   ================================================================================== */
+const K={reviews:"legohouse.v4.reviews", plan:"legohouse.v4.plan", stops:"legohouse.v4.stops", user:"legohouse.v4.user", videos:"legohouse.v4.videos"};
+const uid=()=>'r_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function lsGet(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}}
+function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v))}
+
+/* --- seed rows (each row mirrors a future `reviews` table record) --- */
+function seedReviews(){return [
+  {id:uid(),zone:"red",user_id:"seed-1",author:"Dad of 3",rating:5,text:"Kids did NOT want to leave the build areas. Budget way more time than you think.",created_at:"2026-06-27T10:00:00Z"},
+  {id:uid(),zone:"red",user_id:"seed-2",author:"Ana",rating:4,text:"So much fun but loud and busy — bring patience on weekends.",created_at:"2026-06-15T10:00:00Z"},
+  {id:uid(),zone:"blue",user_id:"seed-3",author:"Markus",rating:5,text:"Building a car and racing it down the test track was my kids' favourite thing all day.",created_at:"2026-06-22T10:00:00Z"},
+  {id:uid(),zone:"blue",user_id:"seed-4",author:"Ele",rating:4,text:"Great for older kids who like a challenge. Younger ones lost interest faster.",created_at:"2026-06-10T10:00:00Z"},
+  {id:uid(),zone:"green",user_id:"seed-5",author:"Priya",rating:5,text:"We made a stop-motion movie AND minifigures of ourselves. Emailed to us after — magic.",created_at:"2026-06-25T10:00:00Z"},
+  {id:uid(),zone:"green",user_id:"seed-6",author:"Lars",rating:4,text:"Popular, so there can be a short wait for the movie stations at midday.",created_at:"2026-06-12T10:00:00Z"},
+  {id:uid(),zone:"yellow",user_id:"seed-7",author:"Sofie",rating:5,text:"The calmest zone — building a fish and seeing it swim on the wall delighted my 4-year-old.",created_at:"2026-06-20T10:00:00Z"}
+];}
+
+/* --- seed trip videos (flat table, one row per video, mirrors a future `videos` table) --- */
+function seedVideos(){return [
+  {id:uid(),zone:"trip",user_id:"seed-v1",author:"The Hansen Family",title:"Our full day at LEGO House!",url:"https://www.youtube.com/watch?v=aBcErFmDkY8",created_at:"2026-06-26T12:00:00Z"},
+  {id:uid(),zone:"blue",user_id:"seed-v2",author:"Markus",title:"Racing our cars down the Blue Zone test track",url:"https://youtu.be/9No-FiEInLA",created_at:"2026-06-22T12:00:00Z"}
+];}
+
+/* --- LocalAdapter: current storage. Async on purpose so Supabase (also async) drops in cleanly. --- */
+const LocalAdapter={
+  async listReviews(){ return lsGet(K.reviews, seedReviews()); },
+  async addReview(r){ const all=await this.listReviews(); all.push(r); lsSet(K.reviews, all); return r; },
+  async getPlan(){ return lsGet(K.plan, []); },
+  async setPlan(p){ lsSet(K.plan, p); },
+  async getStops(){ return lsGet(K.stops, []); },
+  async setStops(s){ lsSet(K.stops, s); },
+  async listVideos(){ return lsGet(K.videos, seedVideos()); },
+  async addVideo(v){ const all=await this.listVideos(); all.push(v); lsSet(K.videos, all); return v; }
+};
+/* 👉 TO GO LIVE: build SupabaseAdapter (see SUPABASE_SETUP.md) then change this ONE line:
+      const DB = SupabaseAdapter;                                                        */
+const DB = LocalAdapter;
+
+/* --- Auth adapter: placeholder now (display name). Swap for supabase.auth later. --- */
+const Auth={
+  user:null,
+  async init(){ this.user = lsGet(K.user, null); },
+  async signIn(name){ this.user = {id:'local-'+Date.now(), name}; lsSet(K.user, this.user); },
+  async signOut(){ this.user=null; localStorage.removeItem(K.user); }
+};
+
+/* ==================================================================================
+   IN-MEMORY CACHE — UI renders synchronously from these; writes update cache first
+   (optimistic), then persist via DB. This is exactly how the Supabase version behaves.
+   ================================================================================== */
+let REVIEWS=[], plan=[], stops=[], VIDEOS=[];
+const reviewsFor=z=>REVIEWS.filter(r=>r.zone===z);
+const avg=z=>{const a=reviewsFor(z);return a.length?a.reduce((s,x)=>s+x.rating,0)/a.length:0;};
+const totalReviews=()=>REVIEWS.length;
+const videosFor=z=>VIDEOS.filter(v=>v.zone===z);
+const totalVideos=()=>VIDEOS.length;
+
+/* ---------- CONTENT (researched, real LEGO House Billund) ---------- */
+const ZONES={
+  red:{name:"Red Zone",skill:"Creative skills",colorHex:"#d9101a",blurb:"The most hands-on, energetic area — a giant waterfall of bricks and huge free-build spaces.",duration:"60–90 min",crowd:"High",best:"Best for: kids & hands-on builders",do:["Free-build with an ocean of classic bricks","DUPLO area for the youngest visitors","Build creatures, flowers and wild machines"]},
+  blue:{name:"Blue Zone",skill:"Cognitive skills",colorHex:"#0066b3",blurb:"Logic, problem-solving and robotics — build it, then test it and program it.",duration:"45–60 min",crowd:"Medium",best:"Best for: problem-solvers, older kids",do:["Build a car and race it down test tracks","Take on robotic and coding challenges","Experiment with cause-and-effect builds"]},
+  green:{name:"Green Zone",skill:"Social skills",colorHex:"#00963d",blurb:"Storytelling and teamwork — make a movie and put yourself into the LEGO world.",duration:"45–60 min",crowd:"Medium–High",best:"Best for: creative & collaborative play",do:["Direct your own stop-motion mini-movie","Build a minifigure version of yourself","Explore detailed LEGO story worlds"]},
+  yellow:{name:"Yellow Zone",skill:"Emotional skills",colorHex:"#e6b800",blurb:"Calmer, imaginative and digital — creations you build come alive on big screens.",duration:"30–45 min",crowd:"Low–Medium",best:"Best for: younger kids, a calmer moment",do:["Build a fish and watch it swim on screen","Create flowers in the digital garden","Gentle, imaginative play areas"]}
+};
+const ORDER=["red","blue","green","yellow"];
+const crowdColor=c=>({"Low":"#2b8a3e","Low–Medium":"#5aa02c","Medium":"#e8910c","Medium–High":"#e8710c","High":"#d9101a"}[c]||"#888");
+const SPECIALS=[
+  {ico:"🌳",name:"Tree of Creativity",note:"The 15.68 m centrepiece, built from ~6.3 million bricks. The wow-moment photo."},
+  {ico:"🏛️",name:"Masterpiece Gallery",note:"Top floor — jaw-dropping builds by adult LEGO fans, including life-size models."},
+  {ico:"📜",name:"History Collection",note:"Basement museum tracing LEGO from a Billund carpentry workshop to a global icon."}
+];
+const ESSENTIALS=[
+  {ico:"🕙",h:"Opening hours",big:"10:00 – 19:00",p:"Open almost year-round. Closed a few days and most of January — check before travelling."},
+  {ico:"⏳",h:"Time to plan",big:"3–4 hours",p:"For the Experience Zones. Allow 4–6+ hours for a full day with dining and the rooftop."},
+  {ico:"📉",h:"Beat the crowds",big:"Weekday mornings",p:"Weekdays outside Danish school holidays. Arrive at 10:00 opening or after ~15:00 for shorter queues."},
+  {ico:"🎟️",h:"Tickets",big:"Book online",p:"Buy in advance to secure your slot. A ticket is valid the whole day with re-entry."},
+  {ico:"🅿️",h:"Parking",big:"~20 DKK / hour",p:"Multi-storey car park 100 m away. Free parking is available at the Granvej 9 lot."},
+  {ico:"🧳",h:"Lockers",big:"Suitcase-size",p:"Large double lockers on the back row fit a big suitcase or two carry-ons."},
+  {ico:"🆓",h:"Free areas",big:"No ticket needed",p:"The foyer, LEGO Store, café and the rooftop public galleries are free to enter."},
+  {ico:"🍽️",h:"Dining",big:"MINI CHEF & more",p:"Order with bricks and robots deliver at MINI CHEF; coffee at BRICKACCINO or eat on LEGO Square."}
+];
+const TIPS=[
+  "Start high and work down — ride to the top for the Masterpiece Gallery, then wind down through the zones.",
+  "Tap your wristband at build stations so your creations are saved as photos you can download later.",
+  "The Tree of Creativity and rooftop are free — even non-ticket holders can see them.",
+  "Wear socks-friendly shoes; some play areas ask you to remove shoes.",
+  "Eat slightly early or late — MINI CHEF gets busy right at noon.",
+  "Combine with LEGOLAND only if you have two days; each easily fills a full day."
+];
+
+/* ---------- helpers ---------- */
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function fmt(d){const dt=new Date(d);if(isNaN(dt))return d;return dt.toLocaleDateString(undefined,{month:'short',day:'numeric'});}
+function initials(n){return (n||'G').trim().slice(0,1).toUpperCase();}
+/* single-glyph stars: only a class flips → no reflow, no jitter, never overflows */
+function starHTML(val,interactive=false){let h='<span class="stars'+(interactive?' rate':'')+'"'+(interactive?' id="rateStars"':'')+'>';
+  for(let i=1;i<=5;i++){h+=`<span class="star${i<=Math.round(val)?' on':''}" data-v="${i}">★</span>`;}return h+'</span>';}
+
+/* ---------- AUTH CHIP ---------- */
+function renderAuth(){
+  const c=document.getElementById('authChip');
+  c.innerHTML = Auth.user
+    ? `<span class="av">${initials(Auth.user.name)}</span>${esc(Auth.user.name)}`
+    : `<span class="av">＋</span>Sign in`;
+}
+async function toggleAuth(){
+  if(Auth.user){ if(confirm('Sign out of '+Auth.user.name+'?')){ await Auth.signOut(); renderAuth(); if(current)renderDetail(); renderVidPoster(); } return; }
+  const name=(prompt('Enter a display name to post reviews as:')||'').trim();
+  if(name){ await Auth.signIn(name); renderAuth(); if(current)renderDetail(); renderVidPoster(); }
+}
+
+/* ---------- TABS ---------- */
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='view-'+b.dataset.tab));
+  if(b.dataset.tab==='reviews')renderAllReviews();
+  if(b.dataset.tab==='videos'){renderVideos();renderVidPoster();}
+  if(b.dataset.tab==='plan')renderPlan();});
+
+/* ---------- STATIC RENDERS ---------- */
+document.getElementById('essGrid').innerHTML=ESSENTIALS.map(e=>`<div class="ecard"><div class="ico">${e.ico}</div><h3>${e.h}</h3><div class="big">${e.big}</div><p>${e.p}</p></div>`).join('');
+document.getElementById('tipsList').innerHTML=TIPS.map(t=>`<li>${t}</li>`).join('');
+document.getElementById('specials').innerHTML=SPECIALS.map(s=>`<div style="display:flex;gap:11px;align-items:flex-start;padding:8px 0"><div style="font-size:20px">${s.ico}</div><div><div style="font-weight:700;font-size:13.5px">${s.name}</div><div style="font-size:12.5px;color:#5a6470;line-height:1.4">${s.note}</div></div></div>`).join('');
+
+/* ---------- LEGEND ---------- */
+const legend=document.getElementById('legend');
+ORDER.forEach(z=>{const Z=ZONES[z];const b=document.createElement('button');b.dataset.zone=z;
+  b.innerHTML=`<span class="swatch" style="background:${Z.colorHex}"></span>${Z.name}`;b.onclick=()=>select(z);legend.appendChild(b);});
+document.querySelectorAll('.zone').forEach(p=>p.addEventListener('click',()=>select(p.dataset.zone)));
+
+/* ---------- EXPLORE DETAIL ---------- */
+let current=null, pendingRating=0;
+function select(z){current=z;pendingRating=0;
+  document.querySelectorAll('.zone').forEach(p=>p.classList.toggle('sel',p.dataset.zone===z));
+  document.querySelectorAll('#legend button').forEach(b=>b.classList.toggle('on',b.dataset.zone===z));
+  renderDetail();}
+function renderDetail(){
+  const z=current,Z=ZONES[z],a=avg(z),revs=reviewsFor(z),inPlan=plan.includes(z);
+  const poster = Auth.user
+    ? `<div class="posting-as">Posting as <b>${esc(Auth.user.name)}</b> · <a onclick="toggleAuth()">switch</a></div>`
+    : `<div class="posting-as">Posting as guest · <a onclick="toggleAuth()">sign in</a> to keep your reviews under your name</div>
+       <input type="text" id="nameIn" placeholder="Your name (optional)" maxlength="28" style="margin-bottom:8px">`;
+  document.getElementById('detail').innerHTML=`
+    <div class="zhero" style="background:${Z.colorHex}"><span class="skill">${Z.skill}</span><h2>${Z.name}</h2><p>${Z.blurb}</p></div>
+    <div class="zbody">
+      <div class="stat-row">
+        <div class="stat"><div class="k">Guest rating</div><div class="v">${a?a.toFixed(1):'—'} ${a?starHTML(a):''}</div></div>
+        <div class="stat"><div class="k">Typical time</div><div class="v" style="font-size:15px">${Z.duration}</div></div>
+        <div class="stat"><div class="k">Crowd</div><div class="v"><span class="crowd-pill" style="background:${crowdColor(Z.crowd)}">${Z.crowd}</span></div></div>
+      </div>
+      <div class="sec-title" style="margin-top:0">What you can do here</div>
+      <ul class="dolist">${Z.do.map(d=>`<li>${d}</li>`).join('')}</ul>
+      <span class="tag">${Z.best}</span>
+      <button class="plan-btn ${inPlan?'added':''}" style="background:${Z.colorHex}" onclick="togglePlan('${z}')">${inPlan?'✓ In your plan — remove':'+ Add to my visit plan'}</button>
+      <div class="sec-title">Rate this zone</div>
+      <div style="display:flex;align-items:center">${starHTML(0,true)}<span class="rate-hint" id="rateHint">Tap a star</span></div>
+      <div class="sec-title">Share your visit</div>
+      ${poster}
+      <textarea id="tipIn" rows="2" placeholder="What should other visitors know?" maxlength="280"></textarea>
+      <button class="submit" onclick="submitReview()">Post review</button>
+      <div class="sec-title">Recent guest tips · ${revs.length}</div>
+      <div id="reviews">${revs.length?renderReviews(revs):'<div class="plan-empty">No tips yet — be the first!</div>'}</div>
+    </div>`;
+  wireRating();
+}
+/* event delegation → 3 listeners total, no per-star churn, snappy */
+function wireRating(){
+  const box=document.getElementById('rateStars'); if(!box)return;
+  const paint=v=>box.querySelectorAll('.star').forEach(s=>s.classList.toggle('on',+s.dataset.v<=v));
+  box.addEventListener('mouseover',e=>{const v=e.target.dataset.v;if(v)paint(+v);});
+  box.addEventListener('mouseleave',()=>paint(pendingRating));
+  box.addEventListener('click',e=>{const v=e.target.dataset.v;if(!v)return;pendingRating=+v;paint(pendingRating);
+    const h=document.getElementById('rateHint');if(h)h.textContent=pendingRating+' / 5';});
+}
+function renderReviews(revs){return [...revs].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).map(rv=>`
+  <div class="review"><div class="rhead"><span class="who"><span class="av">${initials(rv.author)}</span>${esc(rv.author||'Guest')}</span>
+    <span class="when">${fmt(rv.created_at)}</span></div>${starHTML(rv.rating)}<div class="txt">${esc(rv.text)}</div></div>`).join('');}
+
+async function submitReview(){
+  const txt=document.getElementById('tipIn').value.trim();
+  const author = Auth.user ? Auth.user.name : ((document.getElementById('nameIn')||{}).value||'').trim()||'Guest';
+  if(!pendingRating&&!txt){alert('Add a star rating or a tip first 🙂');return;}
+  const row={id:uid(),zone:current,user_id:Auth.user?Auth.user.id:null,author,rating:pendingRating||5,text:txt||'(rated only)',created_at:new Date().toISOString()};
+  REVIEWS.push(row);                 // optimistic cache update
+  renderDetail();updateLegendBadges();updateCounts();
+  try{ await DB.addReview(row); }catch(e){ console.warn('save failed',e); } // Supabase insert goes here
+}
+
+/* ---------- PLAN ---------- */
+const QUICK=["MINI CHEF lunch","BRICKACCINO café","LEGO Store","Rooftop terraces","Tree of Creativity photo","History Collection"];
+async function togglePlan(z){plan.includes(z)?plan=plan.filter(x=>x!==z):plan.push(z);await DB.setPlan(plan);
+  if(current)renderDetail();renderPlan();updateCounts();}
+async function quickAddStop(name){stops.push({name,time:"",when:"",note:""});await DB.setStops(stops);renderPlan();updateCounts();}
+async function addStop(){
+  const name=document.getElementById('stopName').value.trim();if(!name){alert('Give your stop a name 🙂');return;}
+  stops.push({name,time:document.getElementById('stopTime').value,when:document.getElementById('stopWhen').value,note:document.getElementById('stopNote').value.trim()});
+  await DB.setStops(stops);['stopName','stopTime','stopWhen','stopNote'].forEach(id=>document.getElementById(id).value='');
+  renderPlan();updateCounts();}
+async function removeStop(i){stops.splice(i,1);await DB.setStops(stops);renderPlan();updateCounts();}
+function renderPlan(){
+  document.getElementById('quickAdd').innerHTML=QUICK.map(q=>`<button onclick="quickAddStop('${q.replace(/'/g,"\\'")}')">+ ${q}</button>`).join('');
+  const list=document.getElementById('planList');
+  if(!plan.length)list.innerHTML='<li class="plan-empty" style="background:none">No zones yet — add them from the Explore tab.</li>';
+  else list.innerHTML=plan.map((z,i)=>{const Z=ZONES[z];return `<li><span class="dot" style="background:${Z.colorHex}"></span>${i+1}. ${Z.name}<span class="stop-meta">${Z.duration}</span><button class="rm" onclick="togglePlan('${z}')">×</button></li>`;}).join('');
+  const sl=document.getElementById('stopList');
+  if(!stops.length)sl.innerHTML='<li class="plan-empty" style="background:none">No personal stops yet — use the quick buttons or add your own.</li>';
+  else sl.innerHTML=stops.map((s,i)=>`<li><span class="dot" style="background:#1a1a1a"></span><div><div>${esc(s.name)}</div><div class="stop-meta">${[s.time,s.when,s.note].filter(Boolean).map(esc).join(' · ')}</div></div><button class="rm" onclick="removeStop(${i})">×</button></li>`).join('');
+  let lo=0,hi=0;plan.forEach(z=>{const m=ZONES[z].duration.match(/(\d+)\D+(\d+)/);if(m){lo+=+m[1];hi+=+m[2];}});
+  const total=plan.length+stops.length;
+  document.getElementById('planCount').textContent=total+' stop'+(total===1?'':'s');
+  document.getElementById('planFoot').innerHTML=plan.length?`🕒 Zones alone take about <b>${(lo/60).toFixed(1)}–${(hi/60).toFixed(1)} hours</b>. Add lunch and the rooftop and you're looking at a <b>full day</b> — open 10:00–19:00.`:'Add zones to see a time estimate for your day.';
+}
+
+/* ---------- ALL REVIEWS ---------- */
+let revFilter="all";
+function renderRevChips(){const c=document.getElementById('revChips');
+  c.innerHTML=`<button class="chip ${revFilter==='all'?'on':''}" style="${revFilter==='all'?'background:#1a1a1a':''}" onclick="setRevFilter('all')">All zones</button>`+
+    ORDER.map(z=>{const Z=ZONES[z];const on=revFilter===z;return `<button class="chip ${on?'on':''}" style="${on?'background:'+Z.colorHex:''}" onclick="setRevFilter('${z}')">${Z.name} · ${reviewsFor(z).length}</button>`;}).join('');}
+function setRevFilter(z){revFilter=z;renderAllReviews();}
+function renderAllReviews(){renderRevChips();
+  let all=(revFilter==='all'?REVIEWS:reviewsFor(revFilter)).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  document.getElementById('revCount').textContent=all.length+' review'+(all.length===1?'':'s');
+  document.getElementById('allReviews').innerHTML=all.length?all.map(rv=>{const Z=ZONES[rv.zone];return `
+    <div class="review"><div class="rhead"><span class="who"><span class="av">${initials(rv.author)}</span>${esc(rv.author||'Guest')} <span class="zpill" style="background:${Z.colorHex}">${Z.name}</span></span><span class="when">${fmt(rv.created_at)}</span></div>${starHTML(rv.rating)}<div class="txt">${esc(rv.text)}</div></div>`;}).join(''):'<div class="plan-empty">No reviews in this zone yet.</div>';}
+
+/* ---------- TRIP VIDEOS ---------- */
+const vidZoneMeta=z=> z==="trip" ? {name:"Whole trip",colorHex:"#1a1a1a"} : {name:ZONES[z].name,colorHex:ZONES[z].colorHex};
+/* parse common providers → embeddable src; return null if not embeddable */
+function embedSrc(url){
+  const u=(url||'').trim(); if(!u) return null;
+  let m;
+  if((m=u.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/)))
+    return "https://www.youtube.com/embed/"+m[1];
+  if((m=u.match(/vimeo\.com\/(?:video\/)?(\d+)/)))
+    return "https://player.vimeo.com/video/"+m[1];
+  return null;
+}
+let vidFilter="all";
+function renderVidChips(){const c=document.getElementById('vidChips');
+  const opts=[["all","All videos",totalVideos()],["trip","Whole trip",videosFor("trip").length],
+    ...ORDER.map(z=>[z,ZONES[z].name,videosFor(z).length])];
+  c.innerHTML=opts.map(([key,label,n])=>{const on=vidFilter===key;
+    const bg=key==="all"?"#1a1a1a":(key==="trip"?"#1a1a1a":ZONES[key].colorHex);
+    return `<button class="chip ${on?'on':''}" style="${on?'background:'+bg:''}" onclick="setVidFilter('${key}')">${label} · ${n}</button>`;}).join('');}
+function setVidFilter(z){vidFilter=z;renderVideos();}
+function videoCard(v){
+  const Z=vidZoneMeta(v.zone), src=embedSrc(v.url);
+  const frame = src
+    ? `<div class="frame"><iframe src="${src}" loading="lazy" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen title="${esc(v.title)}"></iframe></div>`
+    : `<div class="frame"><a class="link-thumb" href="${esc(v.url)}" target="_blank" rel="noopener"><span class="play">▶</span>Watch this trip video<small>${esc(v.url)}</small></a></div>`;
+  return `<div class="vcard">${frame}<div class="vmeta"><p class="vtitle">${esc(v.title||'Untitled trip video')}</p>
+    <div class="vfoot"><span class="av">${initials(v.author)}</span>${esc(v.author||'Guest')} · ${fmt(v.created_at)}
+    <span class="zpill" style="background:${Z.colorHex}">${Z.name}</span></div></div></div>`;
+}
+function renderVideos(){renderVidChips();
+  let all=(vidFilter==='all'?VIDEOS:videosFor(vidFilter)).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  document.getElementById('vidCount').textContent=all.length+' video'+(all.length===1?'':'s');
+  document.getElementById('vidGrid').innerHTML=all.length?all.map(videoCard).join(''):'<div class="plan-empty">No videos here yet — be the first to post one!</div>';}
+function renderVidPoster(){document.getElementById('vidPoster').innerHTML = Auth.user
+  ? `<div class="posting-as">Posting as <b>${esc(Auth.user.name)}</b> · <a onclick="toggleAuth()">switch</a></div>`
+  : `<div class="posting-as">Posting as guest · <a onclick="toggleAuth()">sign in</a> to keep your videos under your name</div>
+     <input type="text" id="vidName" placeholder="Your name (optional)" maxlength="28" style="margin-bottom:8px">`;}
+function updateVidPreview(){const url=document.getElementById('vidUrl').value;const box=document.getElementById('vidPreview');
+  if(!url.trim()){box.innerHTML='';return;}
+  const src=embedSrc(url);
+  box.innerHTML=src
+    ? `<div class="frame"><iframe src="${src}" allow="encrypted-media" allowfullscreen title="preview"></iframe></div><div class="okline">✓ Link recognised — it will play in the gallery.</div>`
+    : `<div class="warn">We can't embed this link, so it'll show as a “Watch” button that opens in a new tab. YouTube and Vimeo links embed and play here directly.</div>`;}
+async function submitVideo(){
+  const title=document.getElementById('vidTitle').value.trim();
+  const url=document.getElementById('vidUrl').value.trim();
+  const zone=document.getElementById('vidZone').value;
+  const author = Auth.user ? Auth.user.name : ((document.getElementById('vidName')||{}).value||'').trim()||'Guest';
+  if(!url){alert('Paste a video link first 🎬');return;}
+  if(!/^https?:\/\//i.test(url)){alert('That doesn\'t look like a link — it should start with http:// or https://');return;}
+  const row={id:uid(),zone,user_id:Auth.user?Auth.user.id:null,author,title:title||'My LEGO House trip',url,created_at:new Date().toISOString()};
+  VIDEOS.push(row);                              // optimistic cache update
+  ['vidTitle','vidUrl'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('vidPreview').innerHTML='';
+  vidFilter='all'; renderVideos(); updateCounts();
+  try{ await DB.addVideo(row); }catch(e){ console.warn('save failed',e); }  // Supabase insert goes here
+}
+
+/* ---------- BADGES & COUNTS ---------- */
+function updateLegendBadges(){document.querySelectorAll('#legend button').forEach(b=>{const z=b.dataset.zone,a=avg(z);
+  let badge=b.querySelector('.lb');if(!badge){badge=document.createElement('span');badge.className='lb';badge.style.cssText='margin-left:6px;color:#ffb300;font-weight:800';b.appendChild(badge);}
+  badge.textContent=a?('★'+a.toFixed(1)):'';});}
+function updateCounts(){document.getElementById('tabPlanCount').textContent=plan.length+stops.length;document.getElementById('tabRevCount').textContent=totalReviews();document.getElementById('tabVidCount').textContent=totalVideos();}
+
+/* ---------- LEGO HOUSE AI ---------- */
+const SUGGEST=["How long do I need?","When should I go to avoid crowds?","Where do I park?","Best zone for young kids?","Post a trip video","Plan my visit"];
+function topTip(z){const a=reviewsFor(z);if(!a.length)return"";return [...a].sort((x,y)=>y.rating-x.rating)[0].text;}
+function bestZone(){return ORDER.map(z=>({z,a:avg(z)})).sort((x,y)=>y.a-x.a)[0];}
+function aiReply(q){const s=q.toLowerCase();
+  const named=s.includes("red")?"red":s.includes("blue")?"blue":s.includes("green")?"green":s.includes("yellow")?"yellow":null;
+  if(s.includes("hour")||s.includes("open")||s.includes("close")){return `LEGO House is open **10:00–19:00**, almost all year (closed a few days and most of January). A ticket lasts the whole day with re-entry.`;}
+  if(s.includes("how long")||s.includes("how much time")||(s.includes("time")&&s.includes("need"))){return `Plan **3–4 hours** for the four Experience Zones. Add dining, the rooftop and the shop and most families spend a **full day (4–6+ hours)**.`;}
+  if(s.includes("crowd")||s.includes("busy")||s.includes("avoid")||s.includes("best time")||s.includes("when should")){return `Go on a **weekday outside Danish school holidays**, and arrive at **10:00 opening** or after **~15:00** for the shortest queues. Spring and autumn are quieter overall.`;}
+  if(s.includes("park")){return `There's a multi-storey car park **100 m away** at about **20 DKK/hour**, plus a **free** lot at Granvej 9. Pay by card at the machines or exit barrier.`;}
+  if(s.includes("wristband")||s.includes("memories")||(s.includes("save")&&s.includes("build"))){return `At check-in your ticket becomes an **NFC wristband**. Tap it at build stations to **save your creations as photos**, then scan its QR code with your memory PIN to download them (kept 29 days). It also gives **unlimited same-day re-entry**.`;}
+  if(s.includes("ticket")||s.includes("book")||s.includes("price")||s.includes("cost")){return `Buy tickets **online in advance** to secure a slot. Good to know: the **foyer, LEGO Store, café and rooftop are free** without a ticket.`;}
+  if(s.includes("eat")||s.includes("food")||s.includes("lunch")||s.includes("restaurant")||s.includes("mini chef")||s.includes("cafe")||s.includes("café")){return `Signature spot is **MINI CHEF** — order by placing LEGO bricks and robots deliver your food. There's also **BRICKACCINO** for coffee and eateries on LEGO Square. Eat early or late; noon is busiest.`;}
+  if(s.includes("video")||s.includes("film")||s.includes("record")||s.includes("youtube")||s.includes("vlog")){return `Head to the **🎬 Trip Videos** tab to post a video of your visit — paste a **YouTube or Vimeo link**, tag it to a zone or your whole trip, and it plays right in the gallery for other visitors. There are ${totalVideos()} guest video${totalVideos()===1?'':'s'} up so far.`;}
+  if(s.includes("free")||s.includes("without ticket")){return `Free without a ticket: the **foyer, LEGO Store, café** and the **rooftop public galleries**. The **Tree of Creativity** is visible from the free central staircase too.`;}
+  if(s.includes("locker")||s.includes("luggage")||s.includes("suitcase")||s.includes("bag")){return `Yes — there are **large double lockers** (back row) that fit a big suitcase or two carry-ons.`;}
+  if(named){const Z=ZONES[named],a=avg(named);return `**${Z.name}** (${Z.skill}) — ${Z.blurb}\n⭐ ${a?a.toFixed(1):'unrated'} · 🕒 ${Z.duration} · 👥 ${Z.crowd}.\nYou can: ${Z.do.join('; ')}.\nGuest tip: “${topTip(named)||'no tips yet'}”`;}
+  if(s.includes("kid")||s.includes("child")||s.includes("toddler")||s.includes("young")||s.includes("family")){return `For **young kids**, the **Red Zone** (hands-on building + DUPLO) and the calmer **Yellow Zone** (digital fish & flowers) are the easiest wins. For **older kids**, the **Blue Zone** car-racing and robotics is a hit.`;}
+  if(s.includes("start")||s.includes("first")||s.includes("begin")||s.includes("order")){return `Ride to the **top for the Masterpiece Gallery**, snap the **Tree of Creativity**, then work down: **Red → Blue → Green → Yellow**, ending calm. Do popular zones first to beat crowds.`;}
+  if(s.includes("top")||s.includes("best rated")||s.includes("highest")||s.includes("recommend")||s.includes("favourite")||s.includes("favorite")){const b=bestZone();return `Highest-rated right now is the **${ZONES[b.z].name}** at ⭐ ${b.a.toFixed(1)}. Guests say: “${topTip(b.z)}”`;}
+  if(s.includes("plan")||s.includes("route")||s.includes("itinerary")){return `Half-day route:\n1️⃣ **Masterpiece Gallery** + **Tree of Creativity** photo\n2️⃣ **Red Zone** — biggest, do it early\n3️⃣ **Blue Zone** — cars & robotics\n4️⃣ **Green Zone** — movie + your minifigure\n5️⃣ **Yellow Zone** — calm finish\nAdd **MINI CHEF** for lunch. Build it in **My Plan**.`;}
+  if(s.includes("hi")||s.includes("hello")||s.includes("hey")){return `Hi! I'm the LEGO House AI. Ask me hours, parking, how long to stay, when to avoid crowds, or say "plan my visit". 🧱`;}
+  return `I can help with hours, tickets, parking, lockers, food, the wristband, avoiding crowds, the four zones and building a route. Try a suggestion below or ask away.`;
+}
+function pushMsg(text,who){const log=document.getElementById('chatLog');const d=document.createElement('div');d.className='msg '+who;d.innerHTML=who==='bot'?text.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>'):esc(text);log.appendChild(d);log.scrollTop=log.scrollHeight;}
+function sendChat(){const i=document.getElementById('chatInput');const q=i.value.trim();if(!q)return;pushMsg(q,'me');i.value='';setTimeout(()=>pushMsg(aiReply(q),'bot'),250);}
+function renderSuggested(){document.getElementById('suggested').innerHTML=SUGGEST.map(s=>`<button onclick="quickAsk('${s.replace(/'/g,"\\'")}')">${s}</button>`).join('');}
+function quickAsk(s){document.getElementById('chatInput').value=s;sendChat();}
+
+/* ---------- BOOT (async — mirrors Supabase load) ---------- */
+(async function boot(){
+  await Auth.init();
+  REVIEWS = await DB.listReviews();
+  plan    = await DB.getPlan();
+  stops   = await DB.getStops();
+  VIDEOS  = await DB.listVideos();
+  renderAuth(); renderPlan(); updateLegendBadges(); updateCounts(); renderSuggested(); renderVidPoster();
+  document.getElementById('vidUrl').addEventListener('input', updateVidPreview);
+  pushMsg("👋 Welcome to LEGO House Denmark! Ask me a practical question — hours, parking, how long to stay — or tap a suggestion below.",'bot');
+  select('red');
+})();
+</script>
+</body>
+</html>
