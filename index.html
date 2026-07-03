@@ -16,10 +16,7 @@
     background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
   header.top{background:#fff;border-bottom:3px solid var(--yellow);padding:12px 20px;display:flex;
     align-items:center;gap:14px;position:sticky;top:0;z-index:20;box-shadow:var(--shadow)}
-  .studs{display:flex;gap:5px}
-  .stud{width:15px;height:15px;border-radius:50%;box-shadow:inset 0 -2px 3px rgba(0,0,0,.25)}
-  .stud:nth-child(1){background:var(--red)} .stud:nth-child(2){background:var(--blue)}
-  .stud:nth-child(3){background:var(--yellow)} .stud:nth-child(4){background:var(--green)}
+  .brandmark{height:40px;width:auto;display:block;flex:none}
   header.top h1{font-size:17px;margin:0;font-weight:800;letter-spacing:-.3px}
   header.top h1 span{color:#888;font-weight:600;font-size:12.5px;display:block;letter-spacing:0}
   .authchip{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:22px;padding:7px 13px;
@@ -142,7 +139,24 @@
 </head>
 <body>
 <header class="top">
-  <div class="studs"><div class="stud"></div><div class="stud"></div><div class="stud"></div><div class="stud"></div></div>
+  <svg class="brandmark" viewBox="90 84 222 162" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LEGO House Denmark logo">
+    <defs><filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.20"/></filter></defs>
+    <g filter="url(#soft)">
+      <polygon points="302,160 234,194 234,240 302,206" fill="#9E0007" stroke="#7a0005" stroke-width="1.5" stroke-linejoin="round"/>
+      <polygon points="98,126 234,194 234,240 98,172" fill="#C8000A" stroke="#7a0005" stroke-width="1.5" stroke-linejoin="round"/>
+      <polygon points="166,92 302,160 234,194 98,126" fill="#F0141F" stroke="#7a0005" stroke-width="1.5" stroke-linejoin="round"/>
+    </g>
+    <g fill="#FF3B44" stroke="#7a0005" stroke-width="0.8">
+      <ellipse cx="166" cy="97" rx="13" ry="6.5"/><ellipse cx="132" cy="114" rx="13" ry="6.5"/><ellipse cx="200" cy="114" rx="13" ry="6.5"/>
+      <ellipse cx="166" cy="131" rx="13" ry="6.5"/><ellipse cx="234" cy="131" rx="13" ry="6.5"/><ellipse cx="200" cy="148" rx="13" ry="6.5"/>
+      <ellipse cx="268" cy="148" rx="13" ry="6.5"/><ellipse cx="234" cy="165" rx="13" ry="6.5"/>
+    </g>
+    <g fill="#fff" opacity="0.32">
+      <ellipse cx="161.8" cy="94.9" rx="4.7" ry="2.7"/><ellipse cx="127.8" cy="111.9" rx="4.7" ry="2.7"/><ellipse cx="195.8" cy="111.9" rx="4.7" ry="2.7"/>
+      <ellipse cx="161.8" cy="128.9" rx="4.7" ry="2.7"/><ellipse cx="229.8" cy="128.9" rx="4.7" ry="2.7"/><ellipse cx="195.8" cy="145.9" rx="4.7" ry="2.7"/>
+      <ellipse cx="263.8" cy="145.9" rx="4.7" ry="2.7"/><ellipse cx="229.8" cy="162.9" rx="4.7" ry="2.7"/>
+    </g>
+  </svg>
   <h1>LEGO House Denmark<span>Visitor Companion — plan, review & ask the LEGO House AI</span></h1>
   <div class="authchip" id="authChip" onclick="toggleAuth()"></div>
 </header>
